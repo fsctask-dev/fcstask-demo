@@ -1,2 +1,10 @@
 # fcstask
-Try again
+
+
+Проинициализировать проект:
+
+```
+make init
+make tidy
+```
+
