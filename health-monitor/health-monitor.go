@@ -13,6 +13,30 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+type Config struct {
+	Schedule string
+	Timeout  time.Duration
+}
+
+func LoadConfig() Config {
+	cf := Config{
+		Schedule: "*/5 * * * *",
+		Timeout:  5 * time.Second,
+	}
+
+	if sch := os.Getenv("HEALTH_SCHEDULE"); sch != "" {
+		cf.Schedule = sch
+	}
+
+	if timeout := os.Getenv("HEALTH_TIMEOUT"); timeout != "" {
+		if tout, err := time.ParseDuration(timeout); err == nil {
+			cf.Timeout = tout
+		}
+	}
+
+	return cf
+}
+
 type Monitor struct {
 	url      string
 	schedule string
@@ -22,11 +46,13 @@ type Monitor struct {
 }
 
 func NewMonitor(url string) (*Monitor, error) {
+	cf := LoadConfig()
+
 	url = strings.TrimSuffix(url, "/")
 	m := &Monitor{
 		url:      url,
-		schedule: "*/5 * * * *",
-		timeout:  5 * time.Second,
+		schedule: cf.Schedule,
+		timeout:  cf.Timeout,
 		logger:   log.New(os.Stdout, "[health] ", log.LstdFlags),
 		cron:     cron.New(),
 	}
