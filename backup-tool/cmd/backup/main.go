@@ -1,0 +1,65 @@
+package main
+
+import (
+	"backup-tool/config"
+	"backup-tool/internal/backup"
+	"backup-tool/internal/cron"
+	"backup-tool/internal/logging"
+	"backup-tool/internal/storage"
+	"flag"
+	"os"
+	"os/signal"
+	"syscall"
+)
+
+func main() {
+	var (
+		configPath string
+		runNow     bool
+	)
+
+	flag.StringVar(&configPath, "config", "config.yaml", "")
+	flag.BoolVar(&runNow, "run-now", false, "")
+	flag.Parse()
+
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		panic(err)
+	}
+
+	logger := logging.NewLogger(cfg.Logging)
+	defer logger.Close()
+
+	logger.Info("Starting backup tool")
+
+	diskChecker := storage.NewDiskChecker()
+	if err := diskChecker.CheckFreeSpace(cfg.Backup.OutputDir, cfg.Backup.MinFreeSpaceGB); err != nil {
+		logger.Error("Disk space check failed: %v", err)
+		os.Exit(1)
+	}
+
+	backuper := backup.NewBackuper(cfg.Postgres, cfg.Backup, logger)
+
+	if runNow {
+		if err := backuper.CreateBackup(); err != nil {
+			logger.Error("Backup failed: %v", err)
+			os.Exit(1)
+		}
+		logger.Info("Backup completed successfully")
+		return
+	}
+
+	scheduler := cron.NewScheduler(cfg.Cron.Schedule, backuper, logger)
+	scheduler.Start()
+
+	logger.Info("Scheduler started")
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	<-sigChan
+	logger.Info("Shutdown signal received")
+
+	scheduler.Stop()
+	logger.Info("Application stopped")
+}
