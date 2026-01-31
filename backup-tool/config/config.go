@@ -52,15 +52,5 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 
-	if cfg.Backup.SplitSizeMB == 0 {
-		cfg.Backup.SplitSizeMB = 100
-	}
-	if cfg.Backup.MinFreeSpaceGB == 0 {
-		cfg.Backup.MinFreeSpaceGB = 5
-	}
-	if cfg.Logging.Level == "" {
-		cfg.Logging.Level = "info"
-	}
-
 	return &cfg, nil
 }

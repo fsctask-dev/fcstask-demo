@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+const (
+	KB_to_GB = 1024 << 10
+)
+
 type DiskChecker struct{}
 
 func NewDiskChecker() *DiskChecker {
@@ -35,7 +39,7 @@ func (d *DiskChecker) CheckFreeSpace(path string, minFreeGB int) error {
 		return fmt.Errorf("failed to parse free space: %v", err)
 	}
 
-	freeGB := freeKB / (1024 * 1024)
+	freeGB := freeKB / KB_to_GB
 
 	if freeGB < uint64(minFreeGB) {
 		return fmt.Errorf("insufficient disk space: %d GB available, %d GB required", freeGB, minFreeGB)
