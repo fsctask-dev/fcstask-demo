@@ -10,3 +10,7 @@ database:
   password: "postgres"
   database: "fcstask"
   ssl_mode: "disable"
+
+session:
+  ttl: 24h
+  cleanup_interval: 5s

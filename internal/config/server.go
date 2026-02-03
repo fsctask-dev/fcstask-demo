@@ -10,6 +10,12 @@ import (
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
+	Session  SessionConfig  `yaml:"session"`
+}
+
+type SessionConfig struct {
+	TTL             time.Duration `yaml:"ttl"`
+	CleanupInterval time.Duration `yaml:"cleanup_interval"`
 }
 
 type ServerConfig struct {
@@ -31,6 +37,14 @@ func Load(path string) (*Config, error) {
 
 	if cfg.Database.SSLMode == "" {
 		cfg.Database.SSLMode = "disable"
+	}
+
+	if cfg.Session.TTL == 0 {
+		cfg.Session.TTL = 24 * time.Hour
+	}
+
+	if cfg.Session.CleanupInterval == 0 {
+		cfg.Session.CleanupInterval = 5 * time.Second
 	}
 
 	return &cfg, nil

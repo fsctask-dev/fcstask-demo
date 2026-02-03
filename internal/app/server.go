@@ -13,6 +13,7 @@ import (
 	"fcstask/internal/db"
 	"fcstask/internal/db/model"
 	"fcstask/internal/server"
+	authmw "fcstask/internal/server/middleware"
 )
 
 type App struct {
@@ -21,6 +22,7 @@ type App struct {
 	apiServer       *server.APIServer
 	httpServer      server.HTTPServer
 	shutdownTimeout time.Duration
+	sessionCfg      config.SessionConfig
 }
 
 func New(cfg *config.Config) (*App, error) {
@@ -31,11 +33,18 @@ func New(cfg *config.Config) (*App, error) {
 		return nil, fmt.Errorf("failed to init database: %w", err)
 	}
 
-	if err := dbClient.AutoMigrate(&model.User{}); err != nil {
+	if err := dbClient.AutoMigrate(&model.User{}, &model.Session{}); err != nil {
 		log.Printf("Warning: failed to run migrations: %v", err)
 	}
 
 	apiServer := server.NewAPIServer(dbClient)
+
+	e.Use(authmw.Auth(apiServer.UserRepo(), apiServer.SessionRepo(), []string{
+		"/v1/api/me",
+		"/api/signout",
+		"/v1/sessions",
+		"/v1/users/sessions",
+	}))
 
 	api.RegisterHandlers(e, apiServer)
 
@@ -49,6 +58,7 @@ func New(cfg *config.Config) (*App, error) {
 		apiServer:       apiServer,
 		httpServer:      httpServer,
 		shutdownTimeout: cfg.Server.ShutdownTimeout,
+		sessionCfg:      cfg.Session,
 	}, nil
 }
 
@@ -58,6 +68,8 @@ func (a *App) Run(ctx context.Context) error {
 	go func() {
 		errCh <- a.httpServer.Start(ctx)
 	}()
+
+	go a.runSessionCleanup(ctx)
 
 	select {
 	case err := <-errCh:
@@ -78,5 +90,24 @@ func (a *App) Run(ctx context.Context) error {
 		}
 
 		return nil
+	}
+}
+
+func (a *App) runSessionCleanup(ctx context.Context) {
+	ticker := time.NewTicker(a.sessionCfg.CleanupInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			deleted, err := a.apiServer.SessionRepo().CleanOutdated(ctx, a.sessionCfg.TTL)
+			if err != nil {
+				log.Printf("Session cleanup error: %v", err)
+			} else if deleted > 0 {
+				log.Printf("Session cleanup: removed %d expired sessions", deleted)
+			}
+		}
 	}
 }
