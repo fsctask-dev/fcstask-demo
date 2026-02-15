@@ -33,9 +33,9 @@ func New(cfg *config.Config) (*App, error) {
 		return nil, fmt.Errorf("failed to init database: %w", err)
 	}
 
-	if err := dbClient.AutoMigrate(&model.User{}, &model.Session{}); err != nil {
-		log.Printf("Warning: failed to run migrations: %v", err)
-	}
+	// if err := dbClient.AutoMigrate(&model.User{}, &model.Session{}, &model.Course{}, &model.Deadline{}); err != nil {
+	// 	log.Printf("Warning: failed to run migrations: %v", err)
+	// }
 
 	apiServer := server.NewAPIServer(dbClient)
 

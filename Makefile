@@ -5,7 +5,11 @@ BINARY_NAME := fcstask-api
 DOCKER_IMAGE_NAME ?= miruken/$(MODULE_NAME)-backend
 DOCKER_IMAGE_TAG ?= 0.1.0
 
-.PHONY: init tidy migrate migrate install-tools gen test docker-build docker-run docker-test docker-push ci-local ci
+.PHONY: init tidy
+.PHONY: migrate-up migrate-down migrate-status create-migration
+.PHONY: install-tools gen test
+.PHONY: docker-build docker-run docker-test docker-push
+.PHONY: ci-local ci
 
 init:
 	@echo "🔧 Initializing repo: $(MODULE_NAME)..."
@@ -21,10 +25,23 @@ tidy:
 	@go mod tidy
 	@echo "✅ go.mod & go.sum updated"
 
-# Миграции БД
-migrate:
-	@echo "Running database migrations..."
-	go run ./cmd/migrate/main.go
+# Миграции БД с использованием Goose
+.PHONY: migrate-up
+migrate-up:
+	goose -dir internal/db/migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=fcstask sslmode=disable" up
+
+.PHONY: migrate-down
+migrate-down:
+	goose -dir internal/db/migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=fcstask sslmode=disable" down
+
+.PHONY: migrate-status
+migrate-status:
+	goose -dir internal/db/migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=fcstask sslmode=disable" status
+
+.PHONY: create-migration
+create-migration:
+	goose -dir internal/db/migrations create $(name) sql
+
 
 install-tools:
 	@echo "📦 Installing tools..."
