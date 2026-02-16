@@ -1,8 +1,8 @@
 package cron
 
 import (
-	"fcstask/backup-tool/pkg/backup"
-	"fcstask/backup-tool/pkg/logging"
+	"fcstask-backend/backup-tool/pkg/backup"
+	"fcstask-backend/backup-tool/pkg/logging"
 	"time"
 
 	"github.com/robfig/cron/v3"

@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"fcstask/backup-tool/config"
+	"fcstask-backend/backup-tool/config"
 	"fmt"
 	"io"
 	"log"

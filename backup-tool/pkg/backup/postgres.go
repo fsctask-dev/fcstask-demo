@@ -3,8 +3,8 @@ package backup
 import (
 	"bytes"
 	"encoding/json"
-	"fcstask/backup-tool/config"
-	"fcstask/backup-tool/pkg/logging"
+	"fcstask-backend/backup-tool/config"
+	"fcstask-backend/backup-tool/pkg/logging"
 	"fmt"
 	"io"
 	"os"
