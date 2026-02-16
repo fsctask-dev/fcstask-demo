@@ -1,17 +1,25 @@
+GOPATH := $(shell go env GOPATH)
+PATH := $(PATH):$(GOPATH)/bin
 MODULE_NAME := fcstask
+BINARY_NAME := fcstask-api
+DOCKER_IMAGE_NAME ?= miruken/$(MODULE_NAME)-backend
+DOCKER_IMAGE_TAG ?= 0.1.0
 
 .PHONY: init tidy gen test migrate docker-up docker-down docker-logs clean
 
 init:
+	@echo "🔧 Initializing repo: $(MODULE_NAME)..."
 	@if [ ! -f go.mod ]; then \
-		echo "Init repo: $(MODULE_NAME)"; \
-		go mod init $(MODULE_NAME); \
+		go mod init $(MODULE_NAME) && \
+		echo "✅ go.mod created"; \
 	else \
-		echo "good. already exists"; \
+		echo "⚠️  go.mod already exists"; \
 	fi
 
 tidy:
-	go mod tidy
+	@echo "🧹 Tidying dependencies..."
+	@go mod tidy
+	@echo "✅ go.mod & go.sum updated"
 
 # Генерация API кода
 gen:
