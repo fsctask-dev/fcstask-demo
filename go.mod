@@ -3,6 +3,7 @@ module fcstask-backend
 go 1.25.0
 
 require (
+	github.com/golang/mock v1.6.0
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/robfig/cron/v3 v3.0.1
 	gopkg.in/yaml.v3 v3.0.1
