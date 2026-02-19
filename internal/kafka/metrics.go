@@ -9,3 +9,20 @@ type Metric struct {
 	Timestamp time.Time         `json:"timestamp"`
 	Tags      map[string]string `json:"tags,omitempty"`
 }
+
+func NewMetric(name string, value float64, tags map[string]string, timestamp time.Time) Metric {
+	if tags == nil {
+		tags = make(map[string]string)
+	}
+	
+	if timestamp.IsZero() {
+		timestamp = time.Now().UTC()
+	}
+	
+	return Metric{
+		Name:      name,
+		Value:     value,
+		Timestamp: timestamp,
+		Tags:      tags,
+	}
+}

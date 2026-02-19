@@ -43,30 +43,15 @@ func (mc *KafkaMetricsClient) Inc(name string, tags map[string]string) {
 }
 
 func (mc *KafkaMetricsClient) Add(name string, value float64, tags map[string]string) {
-	_ = mc.producer.PublishMetric(mc.ctx, kafka.Metric{
-		Name:      name,
-		Value:     value,
-		Tags:      tags,
-		Timestamp: time.Now(),
-	})
+	_ = mc.producer.PublishMetric(mc.ctx, kafka.NewMetric(name, value, tags, time.Now()))
 }
 
 func (mc *KafkaMetricsClient) Gauge(name string, value float64, tags map[string]string) {
-	_ = mc.producer.PublishMetric(mc.ctx, kafka.Metric{
-		Name:      name,
-		Value:     value,
-		Tags:      tags,
-		Timestamp: time.Now(),
-	})
+	_ = mc.producer.PublishMetric(mc.ctx, kafka.NewMetric(name, value, tags, time.Now()))
 }
 
 func (mc *KafkaMetricsClient) Histogram(name string, value float64, tags map[string]string) {
-	_ = mc.producer.PublishMetric(mc.ctx, kafka.Metric{
-		Name:      name,
-		Value:     value,
-		Tags:      tags,
-		Timestamp: time.Now(),
-	})
+	_ = mc.producer.PublishMetric(mc.ctx, kafka.NewMetric(name, value, tags, time.Now()))
 }
 
 func (mc *KafkaMetricsClient) Close() error {

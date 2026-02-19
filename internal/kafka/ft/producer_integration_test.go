@@ -59,13 +59,9 @@ func TestProducerPublishMetricIntegration(t *testing.T) {
 		_ = producer.Close()
 	})
 
-	metric := kafka.Metric{
-		Name:  "requests_total",
-		Value: 7,
-		Tags: map[string]string{
-			"route": "/v1/echo",
-		},
-	}
+	metric := kafka.NewMetric("requests_total", 7, map[string]string{
+		"route": "/v1/echo",
+	}, time.Time{})
 
 	if err := producer.PublishMetric(ctx, metric); err != nil {
 		t.Fatalf("failed to publish metric: %v", err)

@@ -36,13 +36,9 @@ func TestProducerPublishMetric(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	metric := kafka.Metric{
-		Name:  "requests_total",
-		Value: 42,
-		Tags: map[string]string{
-			"route": "/v1/echo",
-		},
-	}
+	metric := kafka.NewMetric("requests_total", 42, map[string]string{
+		"route": "/v1/echo",
+	}, time.Time{})
 
 	if err := producer.PublishMetric(context.Background(), metric); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -91,11 +87,7 @@ func TestProducerPublishMetricUsesTimestamp(t *testing.T) {
 	}
 
 	expected := time.Date(2025, 1, 2, 3, 4, 5, 6, time.UTC)
-	metric := kafka.Metric{
-		Name:      "latency_ms",
-		Value:     9.5,
-		Timestamp: expected,
-	}
+	metric := kafka.NewMetric("latency_ms", 9.5, nil, expected)
 
 	if err := producer.PublishMetric(context.Background(), metric); err != nil {
 		t.Fatalf("unexpected error: %v", err)
