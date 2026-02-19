@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -41,7 +42,7 @@ type KafkaProducer struct {
 	metricsTopic string
 }
 
-func NewProducer(cfg config.KafkaConfig) (*KafkaProducer, error) {
+func NewProducer(cfg config.KafkaConfig) (Producer, error) {
 	if len(cfg.Brokers) == 0 {
 		return nil, errors.New("kafka brokers list is empty")
 	}
@@ -69,7 +70,7 @@ func NewProducer(cfg config.KafkaConfig) (*KafkaProducer, error) {
 }
 
 // NewProducerWithWriter creates a producer using a custom writer (for tests).
-func NewProducerWithWriter(w Writer, metricsTopic string) (*KafkaProducer, error) {
+func NewProducerWithWriter(w Writer, metricsTopic string) (Producer, error) {
 	if w == nil {
 		return nil, errors.New("kafka writer is nil")
 	}
@@ -123,7 +124,7 @@ func (p *KafkaProducer) PublishMetric(ctx context.Context, metric Metric) error 
 
 func (p *KafkaProducer) Close() error {
 	if p.writer == nil {
-		return nil
+		return fmt.Errorf("kafka producer: writer is nil")
 	}
 	return p.writer.Close()
 }
